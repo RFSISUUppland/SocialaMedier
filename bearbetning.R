@@ -41,16 +41,15 @@ data <- data %>%
 
 wb <- loadWorkbook("data.xlsx")
 
- 
+
 removeWorksheet(wb, "content")
 
 addWorksheet(wb, "content")
 
-
 writeData(wb, sheet = "content", data)
 
-
 saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
+
 
 
 
