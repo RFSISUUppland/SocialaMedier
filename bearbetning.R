@@ -10,6 +10,7 @@ library(openxlsx)
 library(janitor)
 
 
+  # Rådata
 
 rådata <- read_xlsx("C:\\Users\\WILIDF17\\OneDrive - Sveriges Riksidrottsförbund\\Dokument\\GitHub\\RF-SISU Uppland\\SocialaMedier\\rådata.xlsx",
                     sheet = "rådata")
@@ -55,6 +56,65 @@ removeWorksheet(wb, "content")
 addWorksheet(wb, "content")
 
 writeData(wb, sheet = "content", data)
+
+saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
+
+
+
+  ### Webbdata
+
+
+  # Interaktioner med sidor
+
+webb_sidor <- read_excel("rådata.xlsx", 
+                         sheet = "webb_sidor")
+
+webb_sidor <- clean_names(webb_sidor)
+
+webb_sidor <- webb_sidor %>%
+  mutate(
+    nyhet = if_else(
+      grepl("/nyheter/", webbadress_sokvag),
+      1L,
+      NA_integer_
+    )
+  ) %>% select(
+    webbadress_sokvag, sidtitel, besokare, sessioner, avvisningsfrekvens, nyhet
+  )
+
+wb <- loadWorkbook("data.xlsx")
+
+removeWorksheet(wb, "webb_sidor")
+
+addWorksheet(wb, "webb_sidor")
+
+writeData(wb, sheet = "webb_sidor", webb_sidor)
+
+saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
+
+
+  # Interaktioner från andra webbplatser
+
+webb_andrawebbplatser <- read_excel("rådata.xlsx", 
+                                    sheet = "webb_andrawebbplatser")
+
+webb_andrawebbplatser <- clean_names(webb_andrawebbplatser)
+
+webb_andrawebbplatser <- webb_andrawebbplatser %>%
+  mutate(
+    kalla_medium = gsub(" / referral", "", kalla_medium)
+  ) %>% select(
+    kalla_medium, sidtitel, besokare, sessioner, avvisningsfrekvens
+  )
+
+
+wb <- loadWorkbook("data.xlsx")
+
+removeWorksheet(wb, "webb_andrawebbplatser")
+
+addWorksheet(wb, "webb_andrawebbplatser")
+
+writeData(wb, sheet = "webb_andrawebbplatser", webb_andrawebbplatser)
 
 saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
 
