@@ -63,7 +63,6 @@ saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
 
   ### Webbdata
 
-
   # Interaktioner med sidor
 
 webb_sidor <- read_excel("rådata.xlsx", 
@@ -81,6 +80,13 @@ webb_sidor <- webb_sidor %>%
   ) %>% select(
     webbadress_sokvag, sidtitel, besokare, sessioner, avvisningsfrekvens, nyhet
   )
+
+webb_nyheter <- webb_sidor %>% 
+  filter(
+    nyhet == 1,
+    str_detect(webbadress_sokvag, "2025|2026")
+  ) %>% 
+  select(sidtitel, besokare, sessioner)
 
 wb <- loadWorkbook("data.xlsx")
 
