@@ -48,19 +48,6 @@ data <- data %>%
   select(post_id, permalink, publish_time, source, account_name, published_by, description, post_type, category, views, likes, shares, comments, saves, reach, follows, total_clicks, other_clicks, duration_sec)
 
 
-
-wb <- loadWorkbook("data.xlsx")
-
-removeWorksheet(wb, "content")
-
-addWorksheet(wb, "content")
-
-writeData(wb, sheet = "content", data)
-
-saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
-
-
-
   ### Webbdata
 
   # Interaktioner med sidor
@@ -81,13 +68,6 @@ webb_sidor <- webb_sidor %>%
     webbadress_sokvag, sidtitel, besokare, sessioner, avvisningsfrekvens, nyhet
   )
 
-webb_nyheter <- webb_sidor %>% 
-  filter(
-    nyhet == 1,
-    str_detect(webbadress_sokvag, "2025|2026")
-  ) %>% 
-  select(sidtitel, besokare, sessioner)
-
 wb <- loadWorkbook("data.xlsx")
 
 removeWorksheet(wb, "webb_sidor")
@@ -97,6 +77,42 @@ addWorksheet(wb, "webb_sidor")
 writeData(wb, sheet = "webb_sidor", webb_sidor)
 
 saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
+
+
+  # Slå ihop webbnyheter med inlägg från FB + Insta
+webb_nyheter <- webb_sidor %>%  # Filtrera bort icke-nyheter samt inkludera endast nyheter från 2024-25
+  filter(
+    nyhet == 1,
+    str_detect(webbadress_sokvag, "2024|2025"),
+    besokare > 4  # Filtrera bort inlägg som aldrig offentliggjordes eller är felmeddelanden
+  ) %>% 
+  mutate( # Plocka ut datumen från namnet på nyheten som egen kolumn
+    datum = as.Date(
+      str_extract(webbadress_sokvag, "\\d{4}-\\d{2}-\\d{2}")
+    )
+  ) %>% 
+  select(datum, sidtitel, besokare, sessioner)
+
+colnames(webb_nyheter) <- c("publish_time", "description", "reach", "views") # Gör om namnen så att de passar med den andra dataramen
+
+webb_nyheter <- webb_nyheter %>% 
+  mutate(source = "Webb",
+         post_type = "Inlägg (webb)"
+         )
+
+data <- bind_rows(data, webb_nyheter)
+
+
+wb <- loadWorkbook("data.xlsx")
+
+removeWorksheet(wb, "content")
+
+addWorksheet(wb, "content")
+
+writeData(wb, sheet = "content", data)
+
+saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
+
 
 
   # Interaktioner från andra webbplatser
@@ -123,5 +139,3 @@ addWorksheet(wb, "webb_andrawebbplatser")
 writeData(wb, sheet = "webb_andrawebbplatser", webb_andrawebbplatser)
 
 saveWorkbook(wb, "data.xlsx", overwrite = TRUE)
-
-
